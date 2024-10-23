@@ -1,0 +1,70 @@
+{
+  "name": "integration_whatsapp",
+  "version": "1.0.0",
+  "main": "socketio.js",
+  "bin": "socketio.js",
+  "scripts": {
+    "start": "electron .",
+    "make": "electron-forge make",
+    "dev": "nodemon socketio.js"
+  },
+  "keywords": [],
+  "author": "Railson da Silva Martins",
+  "license": "ISC",
+  "description": "Aplicativo de integração do WhatsApp com Google Sheets e Venom Bot",
+  "dependencies": {
+    "atob": "^2.1.2",
+    "axios": "^1.7.7",
+    "boxen": "^8.0.1",
+    "chalk": "^5.3.0",
+    "chrome-launcher": "^1.1.2",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "electron-packager": "^17.1.2",
+    "electron-squirrel-startup": "^1.0.1",
+    "express": "^4.21.1",
+    "futoin-hkdf": "^1.5.3",
+    "googleapis": "^144.0.0",
+    "ini": "^5.0.0",
+    "latest-version": "^9.0.0",
+    "sharp": "^0.33.5",
+    "socket.io": "^4.8.0",
+    "venom-bot": "^5.1.0"
+  },
+  "devDependencies": {
+    "@electron-forge/maker-deb": "^7.5.0",
+    "@electron-forge/maker-rpm": "^7.5.0",
+    "@electron-forge/maker-squirrel": "^7.5.0",
+    "@electron-forge/maker-zip": "^7.5.0",
+    "electron": "^33.0.1"
+  },
+  "config": {
+    "forge": {
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "integration_whatsapp",
+            "setupIcon": "./images/icon.ico",
+            "authors": "Railson da Silva Martins",
+            "exe": "integration_whatsapp.exe"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": ["win32"]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "platforms": ["linux"]
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "platforms": ["linux"]
+        }
+      ]
+    }
+  }
+}

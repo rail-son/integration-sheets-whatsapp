@@ -1,0 +1,168 @@
+<!DOCTYPE html> 
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.socket.io https://stackpath.bootstrapcdn.com; style-src 'self' 'unsafe-inline' https://stackpath.bootstrapcdn.com; img-src 'self' data:; connect-src 'self' ws:;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Integração</title>
+    <script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        
+    <style>
+        body {
+            background-color: #fcd50d;
+            color: #08426a;
+            padding: 20px; /* Adicionado padding ao body */
+        }
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 20px; /* Espaço abaixo dos títulos */
+        }
+        #img1 {
+            display: none;
+            margin: 20px auto;
+            max-width: 80%;
+        }
+        .btn-custom {
+            background-color: #08426a;
+            color: white;
+            width: 250px;
+            margin: 15px 0; /* Aumentar o espaçamento vertical */
+        }
+        .btn-custom:hover {
+            background-color: #062b4d;
+        }
+        .cmd-container {
+            background-color: #08426a; /* Cor de fundo */
+            color: #fff; /* Cor do texto */
+            padding: 20px; /* Aumentar padding */
+            height: 300px; /* Altura máxima */
+            overflow-y: auto; /* Adicionar scroll se exceder */
+            border-radius: 8px;
+            font-family: monospace; /* Fonte de estilo terminal */
+            border: 1px solid #ccc;
+            margin-top: 100px; /* Espaço acima do contêiner de logs */
+            display: none;
+        }
+
+        #resend-btn {
+            display: none;
+        }
+        
+        #logs {
+            margin: 0;
+            line-height: 1.5;
+        }
+        .button-container {
+            display: flex; /* Usar flexbox para centralizar */
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px; /* Espaço acima dos botões */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Sincronização de Solicitações com WhatsApp</h1>
+        <h2 id="status-msg">Aguarde...</h2>
+        <p class="text-center">Em caso de erro de QR Code, tente recarregar o sistema.</p>
+        
+        <img id="img1">
+        
+        <div class="button-container">
+            <button id="main-btn" class="btn btn-custom btn-lg">Conectar no WhatsApp</button>
+            <button id="resend-btn" class="btn btn-custom btn-lg">Forçar Reenvio</button>
+        </div>
+    
+        <!-- Div para exibir os logs, simulando um terminal -->
+        <div class="cmd-container">
+            <p id="logs"></p>
+        </div>
+    </div>
+    <script>
+        // Função para configurar os ouvintes do socket
+        
+        const socket = io('http://localhost:3001');
+
+        function scrollToBottom() {
+            const cmdContainer = document.querySelector('.cmd-container');
+            setTimeout(() => {
+                cmdContainer.scrollTop = cmdContainer.scrollHeight;
+            }, 100); 
+        }
+
+        function setupSocketListeners() {
+            socket.on('message', (data) => {
+                console.log(data);
+            });
+
+            socket.on('status', (status) => { 
+                document.getElementById('status-msg').innerHTML = 'Status: ' + status;
+
+                if (status === 'successChat' || status === 'isLogged' || status === 'CONNECTED' || status === 'Conectado') {
+                    document.querySelector('p').style.display = 'none';
+                    document.getElementById('img1').style.display = 'none';
+                    document.querySelector('h2').style.color = 'green';
+                    document.querySelector('.cmd-container').style.display = 'block';
+                    document.getElementById('resend-btn').style.display = 'block';
+                } else if (status === 'Por favor, escaneie o QR CODE') {
+                    document.getElementById('img1').style.display = 'block';
+                } else if (status === 'DESCONECTADO') {
+                    // Atualiza a cor do texto e o status quando desconectado
+                    document.querySelector('h2').style.color = 'red';
+                    document.getElementById('status-msg').innerHTML = 'Status: DESCONECTADO';
+                    document.querySelector('#main-btn').style.display = 'none';
+                } else if (document.getElementById('status-msg').textContent !== 'Aguarde...') {
+                    document.querySelector('#main-btn').style.display = 'none';
+                } else {
+                    document.querySelector('h2').style.display = 'block';
+                    document.querySelector('p').style.display = 'block';
+                }
+            });
+
+            socket.on('ready', (data) => {
+                document.getElementById('img1').src = data;
+            });
+
+            // Emitir o evento de desconexão e reconexão quando o botão for clicado
+            document.getElementById('main-btn').addEventListener('click', () => {
+                socket.emit('connection'); // Chamar a função de reconexão
+            });
+
+            document.getElementById('resend-btn').addEventListener('click', () => {
+                // Emitindo um evento para forçar o reenvio
+                socket.emit('resend');
+            });
+
+            socket.on('log', (data) => {
+                console.log(data);
+
+                const logElement = document.getElementById('logs');
+                if (logElement) {
+                    const now = new Date(); // Cria um novo objeto Date para pegar a data e hora atuais
+                    const formattedTime = now.toLocaleTimeString(); // Obtém a hora local formatada
+                    
+                    // Verifica se a mensagem contém "WAPI"
+                    if (data.includes('WAPI is not defined')) { 
+                        logElement.innerHTML += `<br><span style="color: red;">${formattedTime}: ${data}</span><br>`;
+                        document.querySelector('h2').style.color = 'red';
+                        document.getElementById('status-msg').innerHTML = 'Status: DESCONECTADO';
+                    } else if (data.includes('Erro')) {
+                        logElement.innerHTML += `<span style="color: yellow;">${formattedTime}: ${data}</span><br>`;
+                    } else {
+                        logElement.innerHTML += `${formattedTime}: ${data}<br>`;
+                    }
+
+                    scrollToBottom(); // Certifique-se de que a função scrollToBottom usa logElement
+                }
+            });
+        }
+
+        // Chamar a função para configurar os ouvintes
+        setupSocketListeners();
+        socket.emit('connection'); // Adicionado aqui
+    </script>
+</body>
+</html>
