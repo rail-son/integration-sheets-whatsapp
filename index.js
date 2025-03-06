@@ -218,7 +218,6 @@ async function sendMessages(client, googleSheets, pendingColumn, funcionariosTel
     io.emit('log', `A planilha será verificada novamente em ${resendInterval} minuto(s)`);
 }
 
-
 // Função para reenviar as mensagens
 async function resend(client, googleSheets, pendingColumn, funcionariosTelefones, resendInterval, range, numeroEncarregado, io) {
     try {
@@ -231,7 +230,6 @@ async function resend(client, googleSheets, pendingColumn, funcionariosTelefones
         process.exit();
     }
 }
-
 
 // Função principal para iniciar o Venom Bot
 async function init(client, io) {
