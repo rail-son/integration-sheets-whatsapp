@@ -231,20 +231,31 @@ async function resend(client, googleSheets, pendingColumn, funcionariosTelefones
     }
 }
 
+function stopPlanilhaLoop(io) {
+    if (resendIntervalId) {
+        clearInterval(resendIntervalId);
+        resendIntervalId = null;
+        console.log("Loop de verificação da planilha interrompido.");
+        io.emit('log', "Loop de verificação da planilha interrompido.");
+    }
+}
+
 // Função principal para iniciar o Venom Bot
 async function init(client, io) {
-    const { pendingColumn, funcionariosTelefones, resendInterval, range , numeroEncarregado} = loadConfig(io);
+    const { pendingColumn, funcionariosTelefones, resendInterval, range , numeroEncarregado } = loadConfig(io);
     const { googleSheets } = await getAuthsheets();
    
     await sendMessages(client, googleSheets, pendingColumn, funcionariosTelefones, resendInterval, range, numeroEncarregado, io);
     
-    resendIntervalId = setInterval(async () => { 
-        await resend(client, googleSheets, pendingColumn, funcionariosTelefones, resendInterval, range, numeroEncarregado, io);
-        await sendMessageSafely(client, numeroEncarregado, "*AUTOMAÇÃO*: *ONLINE!*");
-    }, resendInterval * 60 * 1000);
-    
-
+    if (!resendIntervalId) { // Apenas iniciar se não estiver rodando
+        console.log("Iniciando loop de verificação da planilha...");
+        resendIntervalId = setInterval(async () => { 
+            await resend(client, googleSheets, pendingColumn, funcionariosTelefones, resendInterval, range, numeroEncarregado, io);
+            await sendMessageSafely(client, numeroEncarregado, "*AUTOMAÇÃO*: *ONLINE!*");
+        }, resendInterval * 60 * 1000);
+    }
 }
+
 
 async function resendInit(client, io) {
     const { pendingColumn, funcionariosTelefones, resendInterval, range , numeroEncarregado} = loadConfig(io);
@@ -253,4 +264,5 @@ async function resendInit(client, io) {
     await sendMessages(client, googleSheets, pendingColumn, funcionariosTelefones, resendInterval, range, numeroEncarregado, io);
 }
 
-module.exports = { init, resendIntervalId, resendInit};
+module.exports = { init, resendIntervalId, resendInit, stopPlanilhaLoop };
+

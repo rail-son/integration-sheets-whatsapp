@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Configurações do Sistema</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #fcd50d;
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 800px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 40px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #08426a;
+            margin-bottom: 20px;
+        }
+
+        .nav-tabs {
+            margin-bottom: 20px;
+        }
+
+        .nav-tabs .nav-item {
+            width: 33%;
+            text-align: center;
+        }
+
+        .nav-tabs .nav-link {
+            color: #08426a;
+            font-weight: bold;
+            padding: 12px;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: #08426a;
+            color: white;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .funcionario {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .funcionario input {
+            flex: 1;
+        }
+
+        .remove-funcionario {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .remove-funcionario:hover {
+            background-color: #c82333;
+        }
+
+        #add-funcionario {
+            width: 100%;
+            text-align: center;
+            margin-top: 15px;
+            background-color: #08426a;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        #add-funcionario:hover {
+            background-color: #062b4d;
+        }
+
+        button[type="submit"], .btn-secondary {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border: none;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .funcionario {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .remove-funcionario {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Configurações do Sistema</h2>
+
+        <!-- Menu de Navegação -->
+        <ul class="nav nav-tabs" id="configTabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-tab="funcionarios">Funcionários</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-tab="config-gerais">Configurações Gerais</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-tab="config-google">Configurações do Google Auth</a>
+            </li>
+        </ul>
+
+        <form action="/save-config" method="POST">
+            <!-- Seção Funcionários -->
+            <div class="tab-content active" id="funcionarios">
+                <h3>Funcionários</h3>
+                <div id="funcionarios-container">
+                    <% for (const [nome, numero] of Object.entries(config.funcionarios || {})) { %>
+                        <div class="form-group funcionario">
+                            <input type="text" name="funcionarios[nomes][]" class="form-control" value="<%= nome %>" required>
+                            <input type="text" name="funcionarios[numeros][]" class="form-control" value="<%= numero %>" required>
+                            <button type="button" class="remove-funcionario">Remover</button>
+                        </div>
+                    <% } %>
+                </div>
+                <button type="button" id="add-funcionario">Adicionar Funcionário</button>
+            </div>
+
+            <!-- Seção Configurações Gerais -->
+            <div class="tab-content" id="config-gerais">
+                <h3>Configurações Gerais</h3>
+                <div class="form-group">
+                    <label>Intervalo de Reenvio (minutos):</label>
+                    <input type="number" name="config[resend_interval]" class="form-control" value="<%= config.config ? config.config.resend_interval : '' %>">
+                </div>
+                <div class="form-group">
+                    <label>ID da Planilha:</label>
+                    <input type="text" name="config[id_planilha]" class="form-control" value="<%= config.config ? config.config.id_planilha : '' %>">
+                </div>
+                <div class="form-group">
+                    <label>Coluna Pendente:</label>
+                    <input type="text" name="config[pendingColumn]" class="form-control" value="<%= config.config ? config.config.pendingColumn : '' %>">
+                </div>
+                <div class="form-group">
+                    <label>Range:</label>
+                    <input type="text" name="config[range]" class="form-control" value="<%= config.config ? config.config.range : '' %>">
+                </div>
+                <div class="form-group">
+                    <label>Número Encarregado:</label>
+                    <input type="text" name="config[numeroEncarregado]" class="form-control" value="<%= config.config ? config.config.numeroEncarregado : '' %>">
+                </div>
+            </div>
+            <div class="tab-content" id="config-google">
+            <h3>Configurações do Google Auth</h3>
+            <div class="form-group">
+                <label>Tipo de Autenticação:</label>
+                <input type="text" class="form-control" value="<%= config.google_auth.type %>" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label>ID do Projeto:</label>
+                <input type="text" name="google_auth[project_id]" class="form-control" value="<%= config.google_auth.project_id %>">
+            </div>
+            
+            <div class="form-group">
+                <label>ID da Chave Privada:</label>
+                <input type="text" name="google_auth[private_key_id]" class="form-control" value="<%= config.google_auth.private_key_id %>">
+            </div>
+            
+            <div class="form-group">
+                <label>Chave Privada:</label>
+                <textarea name="google_auth[private_key]" class="form-control" rows="5"><%= config.google_auth.private_key %></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Email do Cliente:</label>
+                <input type="text" name="google_auth[client_email]" class="form-control" value="<%= config.google_auth.client_email %>">
+            </div>
+            
+            <div class="form-group">
+                <label>ID do Cliente:</label>
+                <input type="text" name="google_auth[client_id]" class="form-control" value="<%= config.google_auth.client_id %>">
+            </div>
+            
+            <div class="form-group">
+                <label>URL de Autenticação:</label>
+                <input type="text" class="form-control" value="<%= config.google_auth.auth_uri %>" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label>Token URI:</label>
+                <input type="text" class="form-control" value="<%= config.google_auth.token_uri %>" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label>Certificados OAuth:</label>
+                <input type="text" class="form-control" value="<%= config.google_auth.auth_provider_x509_cert_url %>" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label>Certificado do Cliente:</label>
+                <input type="text" name="google_auth[client_x509_cert_url]" class="form-control" value="<%= config.google_auth.client_x509_cert_url %>">
+            </div>
+            
+            <div class="form-group">
+                <label>Domain do Google:</label>
+                <input type="text" class="form-control" value="<%= config.google_auth.universe_domain %>" readonly>
+            </div>
+        </div>
+
+            <button type="submit" class="btn btn-success">Salvar</button>
+            <a href="/home" class="btn btn-secondary">Voltar</a>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById("add-funcionario").addEventListener("click", function() {
+            const container = document.getElementById("funcionarios-container");
+            const div = document.createElement("div");
+            div.classList.add("form-group", "funcionario");
+            div.innerHTML = `
+                <input type="text" name="funcionarios[nomes][]" class="form-control" placeholder="Nome" required>
+                <input type="text" name="funcionarios[numeros][]" class="form-control" placeholder="Número" required>
+                <button type="button" class="remove-funcionario">Remover</button>
+            `;
+            container.appendChild(div);
+        });
+
+        document.addEventListener("click", function(event) {
+            if (event.target.classList.contains("remove-funcionario")) {
+                event.target.parentElement.remove();
+            }
+        });
+
+        document.querySelectorAll(".nav-link").forEach(tab => {
+            tab.addEventListener("click", function() {
+                document.querySelectorAll(".nav-link").forEach(t => t.classList.remove("active"));
+                document.querySelectorAll(".tab-content").forEach(content => content.classList.remove("active"));
+                
+                this.classList.add("active");
+                document.getElementById(this.dataset.tab).classList.add("active");
+            });
+        });
+    </script>
+
+</body>
+</html>

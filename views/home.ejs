@@ -61,9 +61,35 @@
             align-items: center;
             margin-top: 20px; /* Espaço acima dos botões */
         }
+        .config-btn-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        .btn-custom {
+            background-color: #08426a !important; /* Força a cor desejada */
+            color: white !important;
+            border: none !important;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-custom:hover {
+            background-color: #062b4d !important; /* Cor um pouco mais escura no hover */
+        }
     </style>
 </head>
 <body>
+    <div class="config-btn-container">
+        <a href="/config" class="btn btn-custom">Configurações</a>
+    </div>    
+    
+    
     <div class="container mt-5">
         <h1>Sincronização de Solicitações com WhatsApp</h1>
         <h2 id="status-msg">Aguarde...</h2>
@@ -84,7 +110,7 @@
     <script>
         // Função para configurar os ouvintes do socket
         
-        const socket = io('http://localhost:3001');
+        const socket = io('http://localhost:3000');
 
         function scrollToBottom() {
             const cmdContainer = document.querySelector('.cmd-container');
