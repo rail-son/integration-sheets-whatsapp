@@ -180,8 +180,16 @@ const createVenomSession = async () => {
 
     console.log("Tentando criar uma nova sessão do Venom...");
     isReconnecting = true;
-    
+    const outPath = path.join(__dirname, 'images', 'out.png');;
     try {
+        if (fs.existsSync(outPath)) {
+            try {
+                fs.unlinkSync(outPath);
+                console.log('Arquivo out.png deletado com sucesso');
+            } catch (error) {
+                console.error('Erro ao deletar arquivo out.png:', error);
+            }
+        }
         client = await venom.create({
             headless: false,
             devtools: false,
@@ -215,31 +223,22 @@ const createVenomSession = async () => {
 
                 var imageBuffer = response;
 
-                // Limpar intervalo anterior se existir
-                if (qrUpdateInterval) {
-                    clearInterval(qrUpdateInterval);
-                }
+                require('fs').writeFile(
+                    './images/out.png',
+                    imageBuffer['data'],
+                    'binary',
+                    function (err) {
+                        if (err != null) {
+                            console.log(err);
+                        }
+                    }
+                );
 
                 // Função para atualizar o QR code
-                const updateQR = () => {
-                    require('fs').writeFile(
-                        './images/out.png',
-                        imageBuffer['data'],
-                        'binary',
-                        function (err) {
-                            if (err != null) {
-                                console.log(err);
-                            }
-                        }
-                    );
+                setTimeout(() => {
                     io.emit('ready', './out.png');
-                };
+                }, 3000);
 
-                // Atualizar imediatamente
-                updateQR();
-
-                // Configurar intervalo para atualizar a cada 3 segundos
-                qrUpdateInterval = setInterval(updateQR, 3000);
             },
             statusFind: (statusSession, session) => {
                 console.log('Status Session: ', statusSession);
@@ -247,9 +246,20 @@ const createVenomSession = async () => {
                 const translatedStatus = statusTranslation[statusSession] || statusSession;
                 io.emit('status', translatedStatus);
 
+                // Configurar intervalo de atualização do QR Code quando estiver aguardando scan
+                if (statusSession === 'waitForLogin' || statusSession === 'notLogged') {
+                    if (!qrUpdateInterval) {
+                        qrUpdateInterval = setInterval(() => {
+                            const outPath = path.join(__dirname, 'images', 'out.png');
+                            if (fs.existsSync(outPath)) {
+                                io.emit('ready', './out.png');
+                            }
+                        }, 3000);
+                    }
+                }
+
                 // Deletar o arquivo out.png e limpar o intervalo quando o status for connected
                 if (statusSession === 'successChat' || statusSession === 'isLogged' || statusSession === 'chatsAvailable') {
-                    const outPath = path.join(__dirname, 'images', 'out.png');
                     if (fs.existsSync(outPath)) {
                         try {
                             fs.unlinkSync(outPath);
@@ -273,6 +283,14 @@ const createVenomSession = async () => {
         // Chame a função init passando o novo client
         await init(client, io);
     } catch (error) {
+        if (fs.existsSync(outPath)) {
+            try {
+                fs.unlinkSync(outPath);
+                console.log('Arquivo out.png deletado com sucesso');
+            } catch (error) {
+                console.error('Erro ao deletar arquivo out.png:', error);
+            }
+        }
         console.error("Erro detalhado ao criar sessão:", error);
         if(client){
             await client.close();
@@ -331,33 +349,57 @@ io.on('connection', (socket) => {
         }
 
         try {
-            // Verificar se o cliente está disponível e conectado
+            // Verificar se o cliente existe
             if (!client) {
-                io.emit('log', 'Cliente não está disponível. Tentando reconectar...');
-                io.emit('status', 'DESCONECTADO');
+                io.emit('log', 'Cliente não inicializado. Criando nova sessão...');
                 await createVenomSession();
                 return;
             }
 
             // Verificar se o cliente está realmente conectado
             try {
-                await client.getState();
+                if(client){
+                    io.emit('status', 'Conectado');
+                }
             } catch (error) {
+                console.error('Erro ao verificar estado:', error);
                 io.emit('log', 'Cliente não está conectado. Tentando reconectar...');
-                io.emit('status', 'DESCONECTADO');
-                await client.close();
-                client = null;
+                io.emit('status', 'Desconectado');
+                
+                // Limpar recursos antes de reconectar
+                if (client) {
+                    try {
+                        await client.close();
+                        client = null;
+                    } catch (e) {
+                        console.error('Erro ao fechar cliente:', e);
+                    }
+                }
+                
+                // Limpar intervalos
+                if (resendIntervalId) {
+                    clearInterval(resendIntervalId);
+                }
+                if (qrUpdateInterval) {
+                    clearInterval(qrUpdateInterval);
+                }
+                
+                // Parar o loop da planilha
+                stopPlanilhaLoop(io);
+                
+                // Criar nova sessão
                 await createVenomSession();
                 return;
             }
 
-            io.emit('log', 'Forçando o reenvio...');
+            // Se chegou aqui, o cliente está conectado
             await resendInit(client, io);
+            
         } catch (error) {
             console.error('Erro detalhado:', error);
             io.emit('log', 'Erro ao chamar reenvio:', error.message);
-            io.emit('log', 'Perda de comunicação com o Venom. Sistema deve ser reiniciado...');
-            io.emit('status', 'DESCONECTADO');
+            io.emit('log', 'Perda de comunicação com o Venom. Sistema será reiniciado...');
+            io.emit('status', 'Desconectado');
             
             // Reiniciar a comunicação
             if (client) {
@@ -369,9 +411,12 @@ io.on('connection', (socket) => {
                 }
             }
             
-            // Limpar qualquer intervalo existente
+            // Limpar intervalos
             if (resendIntervalId) {
                 clearInterval(resendIntervalId);
+            }
+            if (qrUpdateInterval) {
+                clearInterval(qrUpdateInterval);
             }
             
             // Parar o loop da planilha

@@ -129,93 +129,121 @@ async function atualizarStatus(googleSheets, linha, novoStatus, pendingColumn, i
 
 async function sendMessageSafely(client, numero, mensagem) {
     try {
+        // Verifica se o cliente existe
+        if (!client) {
+            throw new Error('Cliente WhatsApp não inicializado');
+        }
+
+        // Verifica se o WAPI está carregado
         const isWAPILoaded = await client.page.evaluate(() => {
             return typeof WAPI !== 'undefined';
         });
 
         if (!isWAPILoaded) {
-            throw new Error('WAPI is not defined');
+            throw new Error('WAPI não está definido - Cliente pode estar desconectado');
         }
 
+        // Tenta enviar a mensagem
         await client.sendText(`${numero}@c.us`, mensagem);
     } catch (error) {
+        console.error('Erro detalhado ao enviar mensagem:', error);
         throw new Error(`Erro ao enviar mensagem: ${error.message}`);
     }
 }
 
 // Função para enviar mensagens e atualizar status
 async function sendMessages(client, googleSheets, pendingColumn, funcionariosTelefones, resendInterval, range, numeroEncarregado, io) {
-    const rows = await getDataFromSheet(googleSheets, range, io);
-    if (!rows.length) {
-        console.log('Planilha vazia.');
-        io.emit('log', 'Planilha vazia.');
-        return;
-    }
+    try {
+        const rows = await getDataFromSheet(googleSheets, range, io);
+        if (!rows.length) {
+            console.log('Planilha vazia.');
+            io.emit('log', 'Planilha vazia.');
+            return;
+        }
 
-    for (let index = 0; index < rows.length; index++) {
-        const [time, codigo, veiculo, observacao, funcionario, empresa, status] = rows[index];
+        for (let index = 0; index < rows.length; index++) {
+            const [time, codigo, veiculo, observacao, funcionario, empresa, status] = rows[index];
 
-        // Verifica se as informações essenciais estão presentes
+            if (status === 'Pendente' || !status) {
+                if (!empresa || !funcionario || !veiculo || !Number.isInteger(Number(codigo))) {
+                    const logMessage = `Erro: Linha ignorada, falta de informação ou código da empresa não localizado.`;
+                    console.log(logMessage);
+                    io.emit('log', logMessage);
+                    await sendMessageSafely(client, numeroEncarregado, `*AUTOMAÇÃO*: *ERRO: Um ou mais registros não está sendo enviados por falta de informações ou código da empresa incorreto, favor verifique.*`);
+                    continue;
+                }
 
-        // Verifica se o status é 'Pendente' ou se está vazio
-        if (status === 'Pendente' || !status) {
-            if (!empresa || !funcionario || !veiculo || !Number.isInteger(Number(codigo))) {
-                const logMessage = `Erro: Linha ignorada, falta de informação ou código da empresa não localizado.`;
-                console.log(logMessage);
-                io.emit('log', logMessage);
-                sendMessageSafely(client, numeroEncarregado, `*AUTOMAÇÃO*: *ERRO: Um ou mais registros não está sendo enviados por falta de informações ou código da empresa incorreto, favor verifique.*`);
-                continue;
-            }
-            const funcionarios = funcionario.replace(/\*/g, '').split('/').map(nome => nome.trim());
+                const funcionarios = funcionario.replace(/\*/g, '').split('/').map(nome => nome.trim());
 
-            for (let nome of funcionarios) {
-                const numero = funcionariosTelefones[nome];
-                
-            
+                for (let nome of funcionarios) {
+                    const numero = funcionariosTelefones[nome];
 
-                if (numero) {
-                    const mensagem = `Código da Empresa: ${codigo}\nEmpresa: ${empresa}\nVeículo: ${veiculo}\nFuncionário: ${funcionario}\nObservação: ${observacao}\nHora da Solicitação: ${time}`;
-                    console.log(mensagem);
-                    io.emit('log', mensagem);
+                    if (numero) {
+                        const mensagem = `Código da Empresa: ${codigo}\nEmpresa: ${empresa}\nVeículo: ${veiculo}\nFuncionário: ${funcionario}\nObservação: ${observacao}\nHora da Solicitação: ${time}`;
+                        console.log(mensagem);
+                        io.emit('log', mensagem);
 
-                    try {
-                        const logMessage = `Tentando enviar mensagem para ${funcionario} (${numero})...`;
-                        console.log(logMessage);
-                        io.emit('log', logMessage);
-                
-                        await sendMessageSafely(client, numero, mensagem);
-                
-                        const successMessage = `Mensagem enviada para ${funcionario} no número ${numero}`;
-                        console.log(successMessage);
-                        io.emit('log', successMessage);
-                
-                        await atualizarStatus(googleSheets, index + 1, 'Enviado', pendingColumn, io);
-                    } catch (error) {
-                        const errorMessage = `Erro ao enviar mensagem para ${numero}: ${error.message}`;
-                        console.error(errorMessage);
-                        io.emit('log', errorMessage);
-                
-                        if (error.message.includes('WAPI is not defined') || error.message.includes('disconnected')) {
-                            const disconnectMessage = 'Perda de comunicação com o Venom. Sistema deve ser reiniciado...';
-                            console.error(disconnectMessage);
-                            io.emit('log', disconnectMessage);
-                            await io.emit('status', 'DESCONECTADO');
-                            clearInterval(resendIntervalId);
-                            await socket.emit('connection', reconnection);
-                            process.exit();
+                        try {
+                            const logMessage = `Tentando enviar mensagem para ${funcionario} (${numero})...`;
+                            console.log(logMessage);
+                            io.emit('log', logMessage);
+
+                            await sendMessageSafely(client, numero, mensagem);
+
+                            const successMessage = `Mensagem enviada para ${funcionario} no número ${numero}`;
+                            console.log(successMessage);
+                            io.emit('log', successMessage);
+
+                            await atualizarStatus(googleSheets, index + 1, 'Enviado', pendingColumn, io);
+                        } catch (error) {
+                            const errorMessage = `Erro ao enviar mensagem para ${numero}: ${error.message}`;
+                            console.error(errorMessage);
+                            io.emit('log', errorMessage);
+
+                            // Verifica se é um erro de conexão
+                            if (error.message.includes('WAPI não está definido') || 
+                                error.message.includes('Cliente WhatsApp não inicializado') ||
+                                error.message.includes('disconnected')) {
+                                
+                                const disconnectMessage = 'Perda de comunicação com o WhatsApp. Sistema será reiniciado...';
+                                console.error(disconnectMessage);
+                                io.emit('log', disconnectMessage);
+                                io.emit('status', 'DESCONECTADO');
+                                
+                                // Limpa intervalos
+                                if (resendIntervalId) {
+                                    clearInterval(resendIntervalId);
+                                }
+                                
+                                // Notifica o encarregado
+                                try {
+                                    await sendMessageSafely(client, numeroEncarregado, `*AUTOMAÇÃO*: *ERRO: Sistema detectou perda de conexão com o WhatsApp. Tentando reconectar...*`);
+                                } catch (e) {
+                                    console.error('Erro ao notificar encarregado:', e);
+                                }
+                                
+                                // Reinicia o sistema
+                                process.exit(1);
+                            }
+                            
+                            // Atualiza status na planilha para ERRO
+                            await atualizarStatus(googleSheets, index + 1, 'ERRO', pendingColumn, io);
                         }
-                        process.exit();
+                    } else {
+                        console.log(`Erro: Número de telefone para ${funcionario} não encontrado.`);
+                        io.emit('log', `Erro: Número de telefone para "${funcionario}" não encontrado.`);
+                        await sendMessageSafely(client, numeroEncarregado, `*AUTOMAÇÃO*: *ERRO ao enviar mensagem para "${funcionario}", verifique o nome e número cadastrado.*`);
                     }
-                } else {
-                    console.log(`Erro: Número de telefone para ${funcionario} não encontrado.`);
-                    io.emit('log', `Erro: Número de telefone para "${funcionario}" não encontrado.`);
-                    await sendMessageSafely(client, numeroEncarregado, `*AUTOMAÇÃO*: *ERRO ao enviar mensagem para "${funcionario}", verifique o nome e número cadastrado.*`);
                 }
             }
         }
+        console.log(`A planilha será verificada novamente em ${resendInterval} minuto(s)`);
+        io.emit('log', `A planilha será verificada novamente em ${resendInterval} minuto(s)`);
+    } catch (error) {
+        console.error('Erro ao processar mensagens:', error);
+        io.emit('log', `Erro ao processar mensagens: ${error.message}`);
+        throw error;
     }
-    console.log(`A planilha será verificada novamente em ${resendInterval} minuto(s)`);
-    io.emit('log', `A planilha será verificada novamente em ${resendInterval} minuto(s)`);
 }
 
 // Função para reenviar as mensagens

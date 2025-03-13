@@ -244,9 +244,12 @@
         });
 
         socket.on('ready', (qrPath) => {
-            qrContainer.style.display = 'block';
-            qrCode.src = qrPath;
-            addLog('QR Code gerado');
+            if(status === 'Conectado'){
+                qrContainer.style.display = 'none';
+            } else {
+                qrContainer.style.display = 'block';
+            }
+            qrCode.src = qrPath + '?t=' + new Date().getTime();
         });
 
         socket.on('error', (error) => {
