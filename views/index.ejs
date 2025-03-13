@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Integration</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #fcd50d;
+        }
+        .option-card {
+            cursor: pointer;
+            transition: transform 0.2s;
+            height: 200px;
+            background-color: #ffffff;
+            border: none;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .option-card:hover {
+            transform: scale(1.05);
+        }
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .card-title {
+            color: #08426a;
+        }
+        .card-text {
+            color: #333;
+        }
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 40px;
+        }
+        h1 {
+            color: #08426a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="text-center mb-5">Automatização de mensagens - WhatsApp </h1>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card option-card mb-4" onclick="window.location.href='/comunicacao'">
+                    <div class="card-body text-center">
+                        <div class="card-icon">💬</div>
+                        <h3 class="card-title">Comunicação</h3>
+                        <p class="card-text">Gerencie a conexão com o WhatsApp e monitore as mensagens</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card option-card mb-4" onclick="window.location.href='/config'">
+                    <div class="card-body text-center">
+                        <div class="card-icon">⚙️</div>
+                        <h3 class="card-title">Configurações</h3>
+                        <p class="card-text">Configure funcionários, planilhas e integrações</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

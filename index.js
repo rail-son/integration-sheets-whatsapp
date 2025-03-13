@@ -250,6 +250,7 @@ async function init(client, io) {
     if (!resendIntervalId) { // Apenas iniciar se não estiver rodando
         console.log("Iniciando loop de verificação da planilha...");
         resendIntervalId = setInterval(async () => { 
+            const { pendingColumn, funcionariosTelefones, resendInterval, range , numeroEncarregado} = loadConfig(io);
             await resend(client, googleSheets, pendingColumn, funcionariosTelefones, resendInterval, range, numeroEncarregado, io);
             await sendMessageSafely(client, numeroEncarregado, "*AUTOMAÇÃO*: *ONLINE!*");
         }, resendInterval * 60 * 1000);
