@@ -5,6 +5,10 @@ const venom = require('venom-bot');
 const path = require('path');
 const fs = require('fs');
 const ini = require('ini');
+const puppeteer = require('puppeteer');
+
+// Carregando a configuração do Puppeteer
+require('./puppeteer.config.cjs');
 
 const app = express();
 const server = http.createServer(app);
@@ -207,7 +211,7 @@ const createVenomSession = async () => {
                 '--disable-extensions'
             ],
             puppeteerOptions: {
-                executablePath: path.join(__dirname, 'node_modules', 'chromedriver.exe'),
+                executablePath: '/usr/bin/google-chrome-stable',
                 headless: 'new',
                 args: [
                     '--no-sandbox',

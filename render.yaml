@@ -3,11 +3,21 @@ services:
     name: whatsapp-integration
     env: node
     plan: standard
-    buildCommand: npm install
+    buildCommand: |
+      npm install
+      mkdir -p .cache/puppeteer
+      apt-get update
+      apt-get install -y wget gnupg
+      wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
+      sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+      apt-get update
+      apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1
     startCommand: node socketio.js
     envVars:
       - key: NODE_VERSION
         value: 18.x
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: "true"
     buildFilter:
       paths:
         - package.json
@@ -15,8 +25,9 @@ services:
         - socketio.js
         - index.js
         - views/**
+        - puppeteer.config.cjs
     healthCheckPath: /
     disk:
-      name: data
-      mountPath: /opt/render/project/src/token
+      name: puppeteer-cache
+      mountPath: /opt/render/project/src/.cache/puppeteer
       sizeGB: 1 
