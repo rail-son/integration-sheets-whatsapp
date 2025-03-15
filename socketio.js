@@ -362,16 +362,20 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('connection', async () => {
+    socket.on('startConnection', async () => {
         // Só permite conexão se estiver na página de comunicação
         if (currentPage !== 'comunicacao') {
             socket.emit('error', 'Conexão só é permitida na página de comunicação');
             return;
         }
 
-        if (!client) {
+        if (!client && !isReconnecting) {
             console.log("Nenhuma sessão ativa. Criando nova sessão do Venom...");
             await createVenomSession();
+        } else if (client) {
+            socket.emit('status', 'Já existe uma sessão ativa');
+        } else {
+            socket.emit('status', 'Tentando reconectar...');
         }
     });
 

@@ -262,7 +262,7 @@
 
         connectBtn.addEventListener('click', () => {
             addLog('Iniciando conexão...');
-            socket.emit('connection');
+            socket.emit('startConnection');
             connectBtn.disabled = true;
         });
 
