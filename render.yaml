@@ -20,6 +20,8 @@ services:
         value: 18.19.1
       - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
         value: "true"
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=2048"
     buildFilter:
       paths:
         - package.json

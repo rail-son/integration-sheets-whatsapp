@@ -196,6 +196,12 @@ const createVenomSession = async () => {
                 console.error('Erro ao deletar arquivo out.png:', error);
             }
         }
+
+        // Forçar coleta de lixo antes de criar nova sessão
+        if (global.gc) {
+            global.gc();
+        }
+
         client = await venom.create({
             session: "whatsappSessionIntregationSheets",
             headless: true,
@@ -208,19 +214,38 @@ const createVenomSession = async () => {
                 '--no-first-run',
                 '--no-zygote',
                 '--single-process',
-                '--disable-extensions'
+                '--disable-extensions',
+                '--disable-accelerated-2d-canvas',
+                '--disable-gl-drawing-for-tests',
+                '--disable-software-rasterizer',
+                '--disable-webgl',
+                '--ignore-certificate-errors',
+                '--disable-infobars',
+                '--window-size=800,600',
+                '--disable-web-security',
+                '--disable-features=IsolateOrigins,site-per-process',
+                '--blink-settings=imagesEnabled=false'
             ],
             puppeteerOptions: {
                 executablePath: '/usr/bin/google-chrome-stable',
                 headless: true,
                 args: [
                     '--no-sandbox',
-                    '--disable-setuid-sandbox'
-                ]
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-gpu'
+                ],
+                defaultViewport: {
+                    width: 800,
+                    height: 600
+                }
             },
             disableWelcome: true,
             debug: true,
             logQR: true,
+            autoClose: 60000,
+            createPathFileToken: true,
+            waitForLogin: true,
             updatesLog: true,
             catchQR: (base64Qr, asciiQR) => {
                 console.log(asciiQR);
