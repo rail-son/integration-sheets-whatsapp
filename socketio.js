@@ -47,7 +47,7 @@ app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, 'images')));
 app.use(express.urlencoded({ extended: true }));
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
@@ -193,7 +193,7 @@ const createVenomSession = async () => {
             }
         }
         client = await venom.create({
-            headless: true,
+            headless: "new",
             devtools: false,
             useChrome: false,
             debug: false,
