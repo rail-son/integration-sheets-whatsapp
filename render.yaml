@@ -4,6 +4,8 @@ services:
     env: node
     plan: standard
     buildCommand: |
+      npm cache clean --force
+      rm -rf node_modules package-lock.json
       npm install
       mkdir -p .cache/puppeteer
       apt-get update
@@ -15,7 +17,7 @@ services:
     startCommand: node socketio.js
     envVars:
       - key: NODE_VERSION
-        value: 18.x
+        value: 18.19.1
       - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
         value: "true"
     buildFilter:

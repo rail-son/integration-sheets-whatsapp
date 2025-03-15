@@ -5,10 +5,6 @@ const venom = require('venom-bot');
 const path = require('path');
 const fs = require('fs');
 const ini = require('ini');
-const puppeteer = require('puppeteer');
-
-// Carregando a configuração do Puppeteer
-require('./puppeteer.config.cjs');
 
 const app = express();
 const server = http.createServer(app);
@@ -212,26 +208,14 @@ const createVenomSession = async () => {
                 '--no-first-run',
                 '--no-zygote',
                 '--single-process',
-                '--disable-extensions',
-                '--disable-accelerated-2d-canvas',
-                '--disable-gl-drawing-for-tests',
-                '--no-first-run',
-                '--no-pings',
-                '--window-size=800x600',
-                '--window-position=1000,0'
+                '--disable-extensions'
             ],
             puppeteerOptions: {
-                executablePath: chromePath,
+                executablePath: '/usr/bin/google-chrome-stable',
                 headless: true,
-                defaultViewport: null,
                 args: [
                     '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-dev-shm-usage',
-                    '--disable-accelerated-2d-canvas',
-                    '--disable-gpu',
-                    '--window-size=800x600',
-                    '--window-position=1000,0'
+                    '--disable-setuid-sandbox'
                 ]
             },
             disableWelcome: true,

@@ -1,30 +1,27 @@
 {
   "name": "integration_whatsapp",
   "version": "1.0.0",
-  "description": "Aplicativo de integração do WhatsApp com Google Sheets e Venom Bot",
-  "main": "socketio.js",
+  "description": "Integração WhatsApp com Google Sheets",
+  "main": "index.js",
   "scripts": {
-    "start": "node socketio.js",
-    "dev": "nodemon socketio.js"
+    "start": "node socketio.js"
   },
   "keywords": [],
   "author": "Railson da Silva Martins",
   "license": "ISC",
   "dependencies": {
-    "axios": "^1.7.7",
-    "date-fns": "^4.1.0",
-    "date-fns-tz": "^3.2.0",
-    "dotenv": "^16.4.5",
-    "ejs": "^3.1.10",
-    "express": "^4.21.1",
-    "googleapis": "^144.0.0",
-    "ini": "^5.0.0",
-    "puppeteer": "^24.4.0",
-    "puppeteer-extra": "^3.3.6",
-    "socket.io": "^4.8.0",
-    "venom-bot": "^5.3.0"
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "venom-bot": "4.3.7",
+    "puppeteer": "19.7.0",
+    "ini": "^4.1.1",
+    "ejs": "^3.1.9",
+    "googleapis": "^126.0.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
+  },
+  "engines": {
+    "node": "18.19.1"
   }
 }
