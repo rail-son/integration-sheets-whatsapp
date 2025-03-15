@@ -1,6 +1,7 @@
 {
   "name": "integration_whatsapp",
   "version": "1.0.0",
+  "description": "Aplicativo de integração do WhatsApp com Google Sheets e Venom Bot",
   "main": "socketio.js",
   "scripts": {
     "start": "node socketio.js",
@@ -9,7 +10,6 @@
   "keywords": [],
   "author": "Railson da Silva Martins",
   "license": "ISC",
-  "description": "Aplicativo de integração do WhatsApp com Google Sheets e Venom Bot",
   "dependencies": {
     "axios": "^1.7.7",
     "date-fns": "^4.1.0",

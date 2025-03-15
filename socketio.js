@@ -22,6 +22,9 @@ let currentPage = null; // Para controlar em qual página o usuário está
 let isReconnecting = false; // Nova variável para controlar o estado de reconexão
 let qrUpdateInterval = null; // Nova variável para controlar o intervalo de atualização do QR
 
+// Configuração do caminho do Chrome
+const chromePath = process.env.CHROME_PATH || '/usr/bin/google-chrome-stable';
+
 const statusTranslation = {
     initBrowser: "Iniciando o navegador",
     openBrowser: "O navegador foi aberto com sucesso!",
@@ -185,8 +188,9 @@ const createVenomSession = async () => {
     }
 
     console.log("Tentando criar uma nova sessão do Venom...");
+    console.log("Usando Chrome em:", chromePath);
     isReconnecting = true;
-    const outPath = path.join(__dirname, 'images', 'out.png');;
+    const outPath = path.join(__dirname, 'images', 'out.png');
     try {
         if (fs.existsSync(outPath)) {
             try {
@@ -196,9 +200,9 @@ const createVenomSession = async () => {
                 console.error('Erro ao deletar arquivo out.png:', error);
             }
         }
-            client = await venom.create({
+        client = await venom.create({
             session: "whatsappSessionIntregationSheets",
-            headless: 'new',
+            headless: true,
             useChrome: true,
             browserArgs: [
                 '--no-sandbox',
@@ -208,18 +212,30 @@ const createVenomSession = async () => {
                 '--no-first-run',
                 '--no-zygote',
                 '--single-process',
-                '--disable-extensions'
+                '--disable-extensions',
+                '--disable-accelerated-2d-canvas',
+                '--disable-gl-drawing-for-tests',
+                '--no-first-run',
+                '--no-pings',
+                '--window-size=800x600',
+                '--window-position=1000,0'
             ],
             puppeteerOptions: {
-                executablePath: '/usr/bin/google-chrome-stable',
-                headless: 'new',
+                executablePath: chromePath,
+                headless: true,
+                defaultViewport: null,
                 args: [
                     '--no-sandbox',
-                    '--disable-setuid-sandbox'
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-accelerated-2d-canvas',
+                    '--disable-gpu',
+                    '--window-size=800x600',
+                    '--window-position=1000,0'
                 ]
             },
             disableWelcome: true,
-            debug: false,
+            debug: true,
             logQR: true,
             updatesLog: true,
             catchQR: (base64Qr, asciiQR) => {
