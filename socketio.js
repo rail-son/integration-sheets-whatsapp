@@ -192,33 +192,31 @@ const createVenomSession = async () => {
                 console.error('Erro ao deletar arquivo out.png:', error);
             }
         }
-        client = await venom.create({
-            headless: "new",
-            devtools: false,
-            useChrome: false,
-            debug: false,
-            logQR: true,
-            folderNameToken: "token",
+            client = await venom.create({
             session: "whatsappSessionIntregationSheets",
+            headless: true, // Forçar headless true em produção
+            useChrome: false,
             browserArgs: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
-                '--disable-accelerated-2d-canvas',
+                '--disable-gpu',
                 '--no-first-run',
                 '--no-zygote',
-                '--disable-gpu',
                 '--single-process',
-                '--disable-web-security'
+                '--disable-extensions'
             ],
             puppeteerOptions: {
+                executablePath: process.env.CHROMIUM_PATH || undefined,
+                headless: true,
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox'
                 ]
             },
-            disableSpins: true,
             disableWelcome: true,
+            debug: false,
+            logQR: true,
             updatesLog: true,
             catchQR: (base64Qr, asciiQR) => {
                 console.log(asciiQR);
