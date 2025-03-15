@@ -194,7 +194,7 @@ const createVenomSession = async () => {
         }
             client = await venom.create({
             session: "whatsappSessionIntregationSheets",
-            headless: true, // Forçar headless true em produção
+            headless: "new",
             useChrome: false,
             browserArgs: [
                 '--no-sandbox',
