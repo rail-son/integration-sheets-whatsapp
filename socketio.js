@@ -178,10 +178,6 @@ app.post('/save-config', async (req, res) => {
 });
 
 const createVenomSession = async () => {
-    if (isReconnecting) {
-        console.log("Já existe uma reconexão em andamento...");
-        return;
-    }
 
     console.log("Tentando criar uma nova sessão do Venom...");
     console.log("Usando Chrome em:", chromePath);
