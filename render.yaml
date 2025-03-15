@@ -3,19 +3,11 @@ services:
     name: whatsapp-integration
     env: node
     plan: standard
-    buildCommand: |
-      npm install
-      apt-get update && apt-get install -y \
-        chromium \
-        chromium-browser
+    buildCommand: npm install
     startCommand: node socketio.js
     envVars:
       - key: NODE_VERSION
         value: 18.x
-      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
-        value: true
-      - key: CHROMIUM_PATH
-        value: /usr/bin/chromium
     buildFilter:
       paths:
         - package.json

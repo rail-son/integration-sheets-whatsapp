@@ -194,8 +194,8 @@ const createVenomSession = async () => {
         }
             client = await venom.create({
             session: "whatsappSessionIntregationSheets",
-            headless: "new",
-            useChrome: false,
+            headless: 'new',
+            useChrome: true,
             browserArgs: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -207,8 +207,8 @@ const createVenomSession = async () => {
                 '--disable-extensions'
             ],
             puppeteerOptions: {
-                executablePath: process.env.CHROMIUM_PATH || undefined,
-                headless: true,
+                executablePath: path.join(__dirname, 'node_modules', 'chromedriver.exe'),
+                headless: 'new',
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox'
