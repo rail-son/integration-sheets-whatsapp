@@ -4,7 +4,7 @@
   "main": "socketio.js",
   "bin": "socketio.js",
   "scripts": {
-    "start": "electron .",
+    "start": "node socketio.js",
     "make": "electron-forge make",
     "dev": "nodemon socketio.js"
   },

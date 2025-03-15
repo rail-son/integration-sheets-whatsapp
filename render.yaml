@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: integration-sheets-whatsapp
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.0.0
+    buildFilter:
+      paths:
+        - package.json
+        - package-lock.json
+        - socketio.js
+        - index.js
+        - views/**
+    healthCheckPath: /
+    disk:
+      name: data
+      mountPath: /opt/render/project/src/token
+      sizeGB: 1 

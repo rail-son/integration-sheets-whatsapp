@@ -46,8 +46,10 @@ const statusTranslation = {
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, 'images')));
 app.use(express.urlencoded({ extended: true }));
-server.listen(3000, () => {
-    console.log('Servidor rodando na porta 3000');
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
 
 // Rota principal
@@ -191,22 +193,30 @@ const createVenomSession = async () => {
             }
         }
         client = await venom.create({
-            headless: false,
+            headless: true,
             devtools: false,
-            useChrome: true,
-            debug: true,
+            useChrome: false,
+            debug: false,
             logQR: true,
             folderNameToken: "token",
             session: "whatsappSessionIntregationSheets",
             browserArgs: [
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-accelerated-2d-canvas",
-                "--disable-gpu",
-                "--disable-web-security",
-                "--disable-features=IsolateOrigins,site-per-process"
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--no-first-run',
+                '--no-zygote',
+                '--disable-gpu',
+                '--single-process',
+                '--disable-web-security'
             ],
+            puppeteerOptions: {
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox'
+                ]
+            },
             disableSpins: true,
             disableWelcome: true,
             updatesLog: true,
