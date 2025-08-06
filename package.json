@@ -12,11 +12,13 @@
   "dependencies": {
     "express": "^4.18.2",
     "socket.io": "^4.7.2",
-    "venom-bot": "4.3.7",
+    "whatsapp-web.js": "^1.23.0",
     "puppeteer": "19.7.0",
     "ini": "^4.1.1",
     "ejs": "^3.1.9",
-    "googleapis": "^126.0.1"
+    "googleapis": "^126.0.1",
+    "qrcode": "^1.5.3",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
